@@ -1,0 +1,144 @@
+<%- include('partials/header.ejs') -%>
+
+
+<div class="max-w-screen-xl p-4  mx-auto px-4 sm:px-6 lg:px-8 relative py-26 lg:mt-20">
+    <div class="relative">
+        <div class="lg:grid lg:grid-flow-row-dense lg:grid-cols-2 lg:gap-8 lg:items-center">
+            <div class="lg:col-start-2 lg:max-w-2xl ml-auto">
+                <p class="text-base leading-6 text-indigo-500 font-semibold ">
+                    Ekleyen: <%= note.author%>
+                </p>
+                <h4 class="mt-2 text-2xl leading-8 font-extrabold text-gray-900  sm:text-3xl sm:leading-9">
+                    <%= note.title %>
+                </h4>
+                <span class="mt-4 text-lg leading-6 text-gray-500">
+                    <div id="s"></div>
+                    <%-note.note%>
+                    
+                </span>
+
+                <% for(let tag of note.tags){%>
+                <p class="text-xs mr-2 mt-4 py-1.5 px-4 inline-block text-gray-600 bg-blue-100 w-min rounded-2xl">
+                    <%= tag %>
+                </p>
+                <% } %>
+
+                <ul class="mt-8 md:grid md:grid-cols-4 gap-6">
+                    <li class="mt-6 lg:mt-0">
+
+                        <a href="/edit/<%= note.id %>"
+                            class="flex items-center w-24 px-4 py-2 justify-center text-xs transition ease-in duration-200 uppercase rounded-full hover:bg-default-purple hover:text-white border-2 border-default-purple focus:outline-none">
+                            <i class="far fa-edit px-1"></i>Düzenle
+                        </a>
+
+                    </li>
+                    <li class="mt-6 lg:mt-0">
+
+                        <form action="/delete/<%= note.id %>?_method=DELETE" method="POST">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit"
+                                class="flex items-center w-24 px-4 py-2 justify-center text-xs transition ease-in duration-200 uppercase rounded-full hover:bg-default-purple hover:text-white border-2 border-default-purple focus:outline-none">
+                                <i class="far fa-trash-alt px-1"></i>Sil
+                            </button>
+                        </form>
+
+                    </li>
+                    <li class="mt-6 lg:mt-0">
+
+                        <a href="/noteView/<%= note.id %>"
+                            class="flex items-center w-24 px-4 py-2 justify-center text-xs transition ease-in duration-200 uppercase rounded-full hover:bg-default-purple hover:text-white border-2 border-default-purple focus:outline-none">
+                            <i class="fas fa-binoculars px-1"></i>Gör
+                        </a>
+
+                    </li>
+                </ul>
+            </div>
+            <div class="mt-10 lg:-mx-4 relative relative-20 lg:mt-0 lg:col-start-1">
+                <div class="relative space-y-4">
+                    <% for(let url = 0; url < note.imgUrl.length; url++ ){ %>
+                    <div class="flex items-end justify-center lg:justify-start space-x-4">
+                        <a href="<%=note.imgUrl[url] %>">
+                            <img class="rounded-lg shadow-lg w-32 md:w-56" width="200" src="<%=note.imgUrl[url] %>"
+                            alt="1" />
+                        </a>
+                        
+                        <% continue; %>
+                        <a href="<%=note.imgUrl[url] %>">
+                            <img class="rounded-lg shadow-lg w-40 md:w-64" width="260" src="<%= note.imgUrl[url] %>"
+                            alt="2" />
+                        </a>
+                        
+                    </div>
+
+                    <%  } %>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+<!-- 
+<div id="noteView" class="card text-center mb-3 w-75">
+    <div class="card-header">
+        <h2><%= note.title %></h2>
+    </div>
+    <div class="card-body">
+        <h3 class="card-title"><%= note.note %></h3>
+
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">                    
+                <% for(let tag of note.tags){%>
+                <kbd><%= tag %>
+                    <form class=" btns text-danger" action="/tag_delete/<%= note.id %>" method="POST">
+                        <input type="hidden" value="<%= tag %>" name="tag" />
+                        <button type="submit"
+                            class="crss"><span class="glyphicon glyphicon-remove"></span>
+                        </button>
+                    </form>
+                </kbd>
+                <% } %>
+            </li>
+        </ul>
+
+        <div id="imgCard" class="card-group">
+            <% for(let url of note.imgUrl){%>
+            <form  action="/deleteimg/<%= note.id %>" method="POST">
+                <input type="hidden" value="<%= url %>" name="url" />
+                <div class="card m-1">
+                    <img class="card-img-top" src="<%= url %>" alt="Card image cap">
+                    <div class="card-footer justify-content-center">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card-footer text-muted">
+        <a href="/edit/<%= note.id %>" class="btn btn-primary">
+            <span class="glyphicon glyphicon-edit"></span>
+            <span>Edit Note</span>
+        </a>
+        <form class="btns" action="/delete/<%= note.id %>?_method=DELETE" method="POST">
+            <input type="hidden" name="_method" value="DELETE">
+            <button type="submit" class="btn btn-danger btn-sm a-btn-slide-text">
+                <big>
+                    <span class="glyphicon glyphicon-remove"></span>
+                    <span>Delete Note</span>
+                </big>
+                
+            </button>
+        </form>
+    </div>
+</div>
+
+ -->

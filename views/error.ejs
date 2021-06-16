@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>noteapps</title>
+
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="../css/tailwind.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css"
+        integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk" crossorigin="anonymous">
+
+    <style>
+        body {
+            background-image: url("https://i.pinimg.com/originals/b3/5e/33/b35e33f3988d91175c717fc675d80bbd.jpg");
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <nav class=" text-default-purple flex justify-center h-16 w-screen items-center font-bold ">
+        <div class="flex justify-center uppercase">
+            <a id="logo" href="/home" class="mx-2">
+                <h2>NOTAPP <i class="fas fa-address-book"></i></h2>
+            </a>
+            <div class="text-center mx-2">
+                <a href="/add" class="mx-2">Not Ekle</a>
+                <a href="/search" class="mx-2">Not Ara</a>
+            </div>
+        </div>
+        <% if(currentUser){ %>
+        <div class="flex justify-center mx-2">
+            <p class="mx-2"><%=currentUser.name%></p>
+            <a class="mx-2 uppercase" href="/logout">Logout</a>
+        </div>
+        <%}%>
+    </nav>  
+
+<div class="overflow-hidden">
+    <div class="container mx-auto px-6  relative  flex items-center py-32">
+        <div class="w-screen font-mono flex flex-col items-center relative ">
+            <h1 class="font-extrabold text-5xl text-center text-default-purple leading-tight mt-4">
+                Not Found
+            </h1>
+            <p class="font-extrabold text-8xl my-12 text-default-purple animate-bounce">
+                404
+            </p>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer.ejs') -%>

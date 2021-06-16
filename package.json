@@ -1,0 +1,37 @@
+{
+  "name": "pretty-notes",
+  "version": "1.0.0",
+  "description": "pretty notes",
+  "main": "main.js",
+  "scripts": {
+    "dev": "nodemon app.js"
+  },
+  "repository": "",
+  "keywords": [],
+  "author": "Yunus Emre Acar",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {
+    "async": "^3.2.0",
+    "body-parser": "^1.19.0",
+    "cloudinary": "^1.26.0",
+    "connect-flash": "^0.1.1",
+    "crypto": "^1.0.1",
+    "datatables.net-bs4": "^1.10.20",
+    "datatables.net-dt": "^1.10.20",
+    "dotenv": "^8.2.0",
+    "ejs": "^3.0.2",
+    "ejs-electron": "^2.1.1",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "fs": "^0.0.1-security",
+    "method-override": "^3.0.0",
+    "mongoose": "^5.9.10",
+    "multer": "^1.4.2",
+    "nodemailer": "^6.4.6",
+    "passport": "^0.4.1",
+    "passport-facebook": "^3.0.0",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^6.0.1"
+  }
+}
