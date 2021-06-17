@@ -10,12 +10,11 @@ const LocalStrategy = require('passport-local').Strategy;
 const async = require('async');
 const crypto = require('crypto');
 const dotenv = require('dotenv').config();
-
-
+const nodemailer = require('nodemailer')
 
 
 let storage = multer.diskStorage({
-    
+
     destination: 'public/img/',
     filename: (req, file, cb) => {
         cb(null, Date.now() + '-' + file.originalname)
@@ -28,10 +27,8 @@ let upload = multer({
         checkFileType(file, cb);
     },
 
-    
 
 });
-
 
 
 function checkFileType(file, cb) {
@@ -54,7 +51,9 @@ function isAuthenticatedUser(req, res, next) {
 }
 
 
-
+router.get('/forgot', (req, res) => {
+    res.render('forgot')
+})
 
 router.get('/', (req, res) => {
     if (req.isAuthenticated()) {
@@ -65,7 +64,7 @@ router.get('/', (req, res) => {
 router.get('/home', isAuthenticatedUser, (req, res) => {
     note.find({})
         .then(notes => {
-            res.render('index', { notes: notes });
+            res.render('index', {notes: notes});
         })
         .catch(err => {
             req.flash('error_msg', 'ERROR: ' + err);
@@ -114,18 +113,18 @@ router.get('/note', isAuthenticatedUser, (req, res) => {
                     $options: 'i\m'
                 }
             },
-            {
-                title: {
-                    $regex: new RegExp(req.query.noteTitle),
-                    $options: 'i\m'
+                {
+                    title: {
+                        $regex: new RegExp(req.query.noteTitle),
+                        $options: 'i\m'
+                    }
+                },
+                {
+                    tags: {
+                        $regex: new RegExp(req.query.noteTitle),
+                        $options: 'i\m'
+                    }
                 }
-            },
-            {
-                tags: {
-                    $regex: new RegExp(req.query.noteTitle),
-                    $options: 'i\m'
-                }
-            }
 
             ]
         })
@@ -160,7 +159,16 @@ router.get('/edit/:id', isAuthenticatedUser, (req, res) => {
             res.redirect('/home');
         })
 });
-
+router.get('/reset/:token', (req, res)=>{
+    user.findOne({resetPasswordToken : req.params.token, resetPasswordExpires : {$gt: Date.now()}})
+        .then(user=>{
+            if (!user){
+                req.flash('error_msg','Parola sıfırlama kodu geçersiz veya süresi dolmuş🐢');
+                res.redirect('/forgot')
+            }
+            res.render('passwordNew',{token: req.params.token});
+        })
+})
 router.get('/noteView/:id', isAuthenticatedUser, function (req, res) {
     let SearchQuery = {
         _id: req.params.id
@@ -253,12 +261,14 @@ router.post('/deleteimg/:id', isAuthenticatedUser, (req, res) => {
     })
 
     note.updateOne(SearchQuery, {
-        $pull: {
-            imgUrl: url
+            $pull: {
+                imgUrl: url
+            }
         }
-    }
     )
-        .then(() => { res.redirect('back'); })
+        .then(() => {
+            res.redirect('back');
+        })
         .catch(err => {
             req.flash('error_msg', 'ERROR: ' + err);
             res.redirect('back');
@@ -295,13 +305,103 @@ router.post('/signup', (req, res) => {
 
 });
 
+router.post('/forgot', (req, res, next) => {
+    async.waterfall([(done) => {
+        crypto.randomBytes(20, (err, buf) => {
+            let token = buf.toString('hex');
+            done(err, token);
+            console.log(token);
+        })
+    },
+        (token, done) => {
+            user.findOne({email: req.body.email})
+                .then(user => {
+                    if (!user) {
+                        req.flash('error_msg', ` ${req.body.email} kullanıcı mevcut değil`);
+                        return res.redirect('/forgot');
+                    }
+                    user.resetPasswordToken = token;
+                    user.resetPasswordExpires = Date.now() + 900000; // 15 dk geçerli
+                    user.save(err => {
+                        done(err, token, user);
+                    });
+                })
+                .catch(err=>{
+                    req.flash('error_msg', 'ERROR: '+err);
+                    res.redirect('/forgot')
+                })
+        },
+        (token, user) => {
+            let smtpTransport = nodemailer.createTransport({
+                service: 'Gmail',
+                auth: {
+                    user: process.env.MAIL,
+                    pass: process.env.PASS
+                },
+            });
+            let mailOptions = {
+                to: user.email,
+                from: process.env.MAIL,
+                subject : 'Şifre Sıfırlama Maili',
+                text: 'Şifre Sıfırlama Maili Denemesi \n\n' + `https://${req.headers.host}/reset/${token}`
+            }
+            smtpTransport.sendMail(mailOptions, err => {
+                req.flash('success_msg', 'Kayıtlı e-posta adresinize sıfırlama bağlantıs gönderildi 🐢')
+                res.redirect('/login')
+            })
+        }
+    ])
+});
+router.post('/reset/:token', (req, res) => {
+    async.waterfall([(done) => {
+        user.findOne({resetPasswordToken: req.params.token, resetPasswordExpires: {$gt: Date.now()}})
+            .then(user => {
+                if (!user) {
+                    req.flash('error_msg', 'Parola sıfırlama kodu geçersiz veya süresi dolmuş!!');
+                    res.redirect('/forgot');
+                }
+                if (req.body.password != req.body.confirmpassword) {
+                    req.flash('error_msg', 'Şifre eşleşmiyor');
+                    return res.redirect('/forgot');
+                }
+                user.setPassword(req.body.password, (err) => {
+                    user.resetPasswordToken = undefined;
+                    user.resetPasswordExpires = undefined;
 
+                    user.save(err => {
+                        req.login(user, err => {
+                            done(err, user)
+                        })
+                    });
+                })
+            }) .catch(err=>{
+            req.flash('error_msg', 'ERROR: '+err);
+            res.redirect('/forgot')
+        })
 
+    }, (user)=>{
+        let  smtpTransport = nodemailer.createTransport({
+            host: 'smtp.yandex.com.tr',
+            port: 465,
+            secure : true,
+            auth: {
+                user: 'yunus.acar@interaktifis.com',
+                pass: 'yunus!!acar'
+            }
 
-
-
-
-
+        });
+        let mailOptions = {
+            to: user.email,
+            from: process.env.MAIL,
+            subject : 'Şifreniz sıfırlandı',
+            text: 'Şifre Sıfırlaması Başarılı  \n\n' + `https://${req.headers.host}`
+        };
+        smtpTransport.sendMail((mailOptions, err=>{
+            req.flash('success_msg','Şifreniz Başarıyla Değiştirildi🐢');
+            res.redirect('/login')
+        }))
+    }])
+})
 
 router.put('/edit/:id', isAuthenticatedUser, upload.array('images'), (req, res) => {
     let url = [];
@@ -332,7 +432,7 @@ router.put('/edit/:id', isAuthenticatedUser, upload.array('images'), (req, res) 
             note: req.body.note,
         },
         $push: {
-            imgUrl: { $each: url }
+            imgUrl: {$each: url}
         },
         $addToSet: {
             author: author
@@ -356,10 +456,6 @@ router.put('/edit/:id', isAuthenticatedUser, upload.array('images'), (req, res) 
 // });
 
 
-
-
-
-
 router.delete('/delete/:id', isAuthenticatedUser, (req, res) => {
     let SearchQuery = {
         _id: req.params.id
@@ -374,7 +470,6 @@ router.delete('/delete/:id', isAuthenticatedUser, (req, res) => {
             res.redirect('/home');
         });
 });
-
 
 
 module.exports = router;

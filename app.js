@@ -51,6 +51,7 @@
         useNewUrlParser: true,
         useUnifiedTopology: true,
         useCreateIndex: true
+
     })
         .then(conn => {
             console.log('database connection established');
