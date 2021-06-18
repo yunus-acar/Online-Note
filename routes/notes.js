@@ -11,6 +11,7 @@ const async = require('async');
 const crypto = require('crypto');
 const dotenv = require('dotenv').config();
 const nodemailer = require('nodemailer')
+const FacebookStrategy = require('passport-facebook').Strategy;
 
 
 let storage = multer.diskStorage({
@@ -304,7 +305,6 @@ router.post('/signup', (req, res) => {
     })
 
 });
-
 router.post('/forgot', (req, res, next) => {
     async.waterfall([(done) => {
         crypto.randomBytes(20, (err, buf) => {

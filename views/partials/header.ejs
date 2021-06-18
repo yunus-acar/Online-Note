@@ -28,10 +28,15 @@
                 <a href="/search" class="mx-2">Not Ara</a>
             </div>
         </div>
-        <% if(currentUser){ %> 
+        <% if(currentUser){ %>
+
             <div class="flex justify-center mx-2">
+
+
                 <p class="mx-2"><%=currentUser.name%></p>
+
                 <a class="mx-2 uppercase" href="/logout">Logout</a>
             </div>
-            <%}%>
+
+        <%}%>
     </nav>   

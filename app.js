@@ -12,7 +12,7 @@ const flash = require('connect-flash');
 const user = require('./models/users_db');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
-
+const FacebookStrategy = require('passport-facebook').Strategy;
 
 app.use(flash());
 
@@ -26,64 +26,52 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 passport.use(new LocalStrategy({usernameField: 'email'}, user.authenticate()),);
-passport.serializeUser(user.serializeUser());
-passport.deserializeUser(user.deserializeUser());
-// passport.use(new FacebookStrategy({
-//         clientID: process.env.ID,
-//         clientSecret: process.env.CSECRET,
-//         callbackURL: process.env.CBURL,
-//         profileFields: ['id', 'displayName', 'name', 'gender', 'picture.type(large)', 'email']
-//     },
-//     function (accessToken, refreshToken, profile, cb) {
-//         console.log(profile)
-//         process.nextTick(function () {
-//             user.findOne({'facebook.id': profile.id}, function (err, user) {
-//                 if (err) return cb(err)
-//                 if (user) {
-//                     return cb(null, user)
-//                 } else {
-//                     let id = profile.id;
-//                     let token = profile.token;
-//                     let name = profile.name.givenName + ' ' + profile.name.familyName;
-//                     let email = profile.emails[0].value;
-//                     let newUser =  user
-//                     newUser.facebook.id = id;
-//                     newUser.facebook.token = token
-//                     newUser.facebook.name = name
-//                     newUser.facebook.email = email
-//
-//
-//                     user.create(newUser)
-//
-//
-//                     newUser.save(function (err) {
-//                         if (err) {
-//                             throw  err;
-//
-//                         }
-//                         return cb(null, newUser)
-//                     })
-//                 }
-//             })
-//         })
-//
-//     }
-// ));
-// app.get('/auth/facebook',passport.authenticate('facebook',{scope:'email'}))
-// app.get('facebook/callback',passport.authenticate('facebook',{
-//     successRedirect : '/home',
-//     failureRedirect : '/login'
-//
-// }))
-// app.get('/auth/facebook',
-//     passport.authenticate('facebook'));
-//
-// app.get('/auth/facebook/callback',
-//     passport.authenticate('facebook', {failureRedirect: '/login'}),
-//     function (req, res) {
-//         // Successful authentication, redirect home.
-//         res.redirect('/');
-//     });
+// passport.serializeUser(user.serializeUser());
+// passport.deserializeUser(user.deserializeUser());
+passport.serializeUser(function(user, done) {
+    done(null, user);
+});
+
+passport.deserializeUser(function(obj, done) {
+    done(null, obj);
+});
+
+
+
+passport.use(
+    new FacebookStrategy(
+        {
+            clientID: process.env.ID,
+            clientSecret: process.env.CSECRET,
+            callbackURL: process.env.CBURL,
+            profileFields: ["email", "name"]
+        },
+        function(accessToken, refreshToken, profile, done) {
+            const { email, last_name } = profile._json;
+
+            const data = {
+                email: email,
+                name: last_name
+            };
+
+            console.log(typeof last_name)
+            console.log(last_name)
+             user(data).save();
+            done(null, profile);
+        }
+    )
+);
+app.get("/auth/facebook", passport.authenticate("facebook"));
+
+app.get(
+    "/auth/facebook/callback",
+    passport.authenticate("facebook", {
+        successRedirect: '/home',
+        failureRedirect: '/login',
+    })
+);
+
+//ssssss
 app.use((req, res, next) => {
     res.locals.success_msg = req.flash(('success_msg'));
     res.locals.error_msg = req.flash(('error_msg'));
