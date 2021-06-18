@@ -341,7 +341,7 @@ router.post('/forgot', (req, res, next) => {
             });
             let mailOptions = {
                 to: user.email,
-                from: process.env.MAIL,
+                from:  process.env.MAIL,
                 subject : 'Şifre Sıfırlama Maili',
                 text: 'Şifre Sıfırlama Maili Denemesi \n\n' + `https://${req.headers.host}/reset/${token}`
             }
@@ -374,33 +374,33 @@ router.post('/reset/:token', (req, res) => {
                         })
                     });
                 })
-            }) .catch(err=>{
-            req.flash('error_msg', 'ERROR: '+err);
-            res.redirect('/forgot')
+            })  .catch(err=>{
+            req.flash('error_msg', "ERROR: " +err);
+            res.redirect('/forgot');
         })
 
     }, (user)=>{
         let  smtpTransport = nodemailer.createTransport({
-            host: 'smtp.yandex.com.tr',
-            port: 465,
-            secure : true,
+            service: 'Gmail',
             auth: {
-                user: 'yunus.acar@interaktifis.com',
-                pass: 'yunus!!acar'
-            }
+                user: process.env.MAIL,
+                pass: process.env.PASS
+            },
 
         });
         let mailOptions = {
             to: user.email,
-            from: process.env.MAIL,
+            from:  process.env.MAIL,
             subject : 'Şifreniz sıfırlandı',
             text: 'Şifre Sıfırlaması Başarılı  \n\n' + `https://${req.headers.host}`
         };
-        smtpTransport.sendMail((mailOptions, err=>{
+        smtpTransport.sendMail(mailOptions, err=>{
             req.flash('success_msg','Şifreniz Başarıyla Değiştirildi🐢');
             res.redirect('/login')
-        }))
-    }])
+        })
+    }],err=>{
+        res.redirect('/login')
+    })
 })
 
 router.put('/edit/:id', isAuthenticatedUser, upload.array('images'), (req, res) => {

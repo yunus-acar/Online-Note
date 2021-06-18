@@ -7,6 +7,7 @@ let userSchema = new mongoose.Schema({
         type : String,
         select : false
     },
+
     resetPasswordToken : String,
     resetPasswordExpires : Date
 
